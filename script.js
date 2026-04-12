@@ -8,10 +8,7 @@ const MODES = {
     AUTO: "AUTO",
     EMERGENCY: "EMERGENCY",
 };
-const MODE_VALUES = {
-    MANUAL: 0,
-    AUTO: 1,
-};
+
 const STEP = {
     READY: 0,
     FIND_ITEM: 1,
@@ -31,18 +28,16 @@ const MOVE_CODES = {
 };
 
 const JOINTS_WITH_NAMES = [
-    { id: 1, label: "Base", actionName: "Servo_Base" },
-    { id: 2, label: "Shoulder", actionName: "Servo_Shoulder" },
-    { id: 3, label: "Elbow", actionName: "Servo_Elbow" },
-    { id: 4, label: "Wrist Pitch", actionName: "Servo_Wrist_Pitch" },
-    { id: 5, label: "Wrist Roll", actionName: "Servo_Wrist_Roll" },
-    { id: 6, label: "Gripper", actionName: "Servo_Gripper" },
+    { id: 1, label: "Base", actionName: "Servo_Base", min: 0, max: 180, home: 70 },
+    { id: 2, label: "Shoulder", actionName: "Servo_Shoulder", min: 0, max: 160, home: 90 },
+    { id: 3, label: "Elbow", actionName: "Servo_Elbow", min: 20, max: 160, home: 90 },
+    { id: 4, label: "Wrist Pitch", actionName: "Servo_Wrist_Pitch", min: 30, max: 140, home: 60 },
+    { id: 5, label: "Wrist Roll", actionName: "Servo_Wrist_Roll", min: 0, max: 180, home: 110 },
+    { id: 6, label: "Gripper", actionName: "Servo_Gripper", min: 20, max: 80, home: 80 },
 ];
 
-const DEFAULT_ARM_ANGLE = 90;
-const GRIPPER_CLOSE_ANGLE = 160;
-const GRIPPER_OPEN_ANGLE = 10;
-
+const GRIPPER_CLOSE_ANGLE = 20;
+const GRIPPER_OPEN_ANGLE = 80;
 const appState = {
     currentMode: MODES.MANUAL,
     currentStep: STEP.READY,
@@ -566,7 +561,7 @@ function renderArmControls() {
         const btn = document.createElement("button");
         btn.id = "btnResetArm";
         btn.className = "btn-reset-arm";
-        btn.textContent = "Reset về 90°";
+        btn.textContent = "Reset về góc mặc định";
         armHeader.appendChild(btn);
     }
 
@@ -584,19 +579,19 @@ function renderArmControls() {
                         type="number"
                         id="num${joint.id}"
                         class="joint-input"
-                        value="${DEFAULT_ARM_ANGLE}"
-                        min="0"
-                        max="180"
+                        value="${joint.home}"
+                        min="${joint.min}"
+                        max="${joint.max}"
                     >
-                    <div class="input-tooltip">Nhập từ 0° - 180°</div>
+                    <div class="input-tooltip">Nhập từ ${joint.min}° - ${joint.max}°</div>
                 </div>
             </div>
             <input
                 type="range"
                 id="range${joint.id}"
-                min="0"
-                max="180"
-                value="${DEFAULT_ARM_ANGLE}"
+                min="${joint.min}"
+                max="${joint.max}"
+                value="${joint.home}"
             >
         `;
         armGrid.appendChild(wrapper);
@@ -617,7 +612,6 @@ function renderArmControls() {
         }
     });
 }
-
 function startClock() {
     const update = () => {
         const timeEl = el("sysTime");
@@ -1138,14 +1132,21 @@ function getServoActionById(id) {
         default: return null;
     }
 }
-
+function getJointConfigById(id) {
+    return JOINTS_WITH_NAMES.find((joint) => joint.id === id) || null;
+}
 function sendArmCommand(id, value) {
     if (!ensureManualServoControl("điều khiển tay máy")) return;
 
-    const safeValue = clamp(value, 0, 180);
+    const joint = getJointConfigById(id);
+    if (!joint) {
+        printLog(`Không tìm thấy cấu hình khớp J${id}`, "error");
+        return;
+    }
+
+    const safeValue = clamp(value, joint.min, joint.max);
     const action = getServoActionById(id);
-    const joint = JOINTS_WITH_NAMES.find((j) => j.id === id);
-    const jointName = joint ? joint.label : `Joint ${id}`;
+    const jointName = joint.label;
 
     if (!action) {
         printLog(`Thiếu action servo cho ${jointName}`, "error");
@@ -1155,7 +1156,7 @@ function sendArmCommand(id, value) {
     const ok = triggerEraAction(action, safeValue);
     if (ok) {
         if (id === 6) {
-            appState.gripperState = safeValue >= 90 ? "CLOSED" : "OPEN";
+            appState.gripperState = safeValue <= 40 ? "CLOSED" : "OPEN";
         }
         printLog(`Khớp ${jointName} (J${id}) -> ${safeValue}°`, "info");
     }
@@ -1164,9 +1165,11 @@ function sendArmCommand(id, value) {
 function syncFromNum(id) {
     const numInput = el(`num${id}`);
     const rangeInput = el(`range${id}`);
-    if (!numInput || !rangeInput) return;
+    const joint = getJointConfigById(id);
 
-    const val = clamp(numInput.value, 0, 180);
+    if (!numInput || !rangeInput || !joint) return;
+
+    const val = clamp(numInput.value, joint.min, joint.max);
     numInput.value = val;
     rangeInput.value = val;
     sendArmCommand(id, val);
@@ -1175,19 +1178,21 @@ function syncFromNum(id) {
 function syncFromRange(id) {
     const numInput = el(`num${id}`);
     const rangeInput = el(`range${id}`);
-    if (!numInput || !rangeInput) return;
+    const joint = getJointConfigById(id);
 
-    const val = clamp(rangeInput.value, 0, 180);
+    if (!numInput || !rangeInput || !joint) return;
+
+    const val = clamp(rangeInput.value, joint.min, joint.max);
     numInput.value = val;
 }
 
 async function resetArm() {
     if (!ensureManualServoControl("reset tay máy")) return;
 
-    printLog("Hệ thống: Đang đưa tay máy về vị trí mặc định (90°)...", "info");
+    printLog("Hệ thống: Đang đưa tay máy về góc mặc định an toàn...", "info");
 
     for (const joint of JOINTS_WITH_NAMES) {
-        const defaultVal = DEFAULT_ARM_ANGLE;
+        const defaultVal = joint.home;
         const numInput = el(`num${joint.id}`);
         const rangeInput = el(`range${joint.id}`);
 
@@ -1203,9 +1208,8 @@ async function resetArm() {
     }
 
     appState.gripperState = "OPEN";
-    printLog("Hoàn tất: Tay máy đã về vị trí 90°.", "success");
+    printLog("Hoàn tất: Tay máy đã về góc mặc định.", "success");
 }
-
 /* =========================
    13. WMS SHARED (MANUAL + AUTO)
 ========================= */
