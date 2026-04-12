@@ -33,11 +33,11 @@ const JOINTS_WITH_NAMES = [
     { id: 3, label: "Elbow", actionName: "Servo_Elbow", min: 20, max: 160, home: 90 },
     { id: 4, label: "Wrist Pitch", actionName: "Servo_Wrist_Pitch", min: 30, max: 140, home: 60 },
     { id: 5, label: "Wrist Roll", actionName: "Servo_Wrist_Roll", min: 0, max: 180, home: 110 },
-    { id: 6, label: "Gripper", actionName: "Servo_Gripper", min: 20, max: 80, home: 80 },
+    { id: 6, label: "Gripper", actionName: "Servo_Gripper", min: 10, max: 160, home: 160 },
 ];
 
-const GRIPPER_CLOSE_ANGLE = 20;
-const GRIPPER_OPEN_ANGLE = 80;
+const GRIPPER_CLOSE_ANGLE = 10;
+const GRIPPER_OPEN_ANGLE = 160;
 const appState = {
     currentMode: MODES.MANUAL,
     currentStep: STEP.READY,
@@ -1156,7 +1156,7 @@ function sendArmCommand(id, value) {
     const ok = triggerEraAction(action, safeValue);
     if (ok) {
         if (id === 6) {
-            appState.gripperState = safeValue <= 40 ? "CLOSED" : "OPEN";
+            appState.gripperState = safeValue <= 85 ? "CLOSED" : "OPEN";
         }
         printLog(`Khớp ${jointName} (J${id}) -> ${safeValue}°`, "info");
     }
