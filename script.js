@@ -154,6 +154,7 @@ const eraActions = {
 
     gripperClose: null,
     gripperOpen: null,
+    resetArm: null,
 };
 
 const eraRealtimeConfigs = {
@@ -205,7 +206,7 @@ function bindEraConfiguration(configuration) {
     eraActions.servoWristPitch = findActionFlexible(actions, ["Servo_Wrist_Pitch", "WristPitch"]);
     eraActions.servoWristRoll = findActionFlexible(actions, ["Servo_Wrist_Roll", "WristRoll"]);
     eraActions.servoGripper = findActionFlexible(actions, ["Servo_Gripper", "Gripper"]);
-
+    eraActions.resetArm = findActionFlexible(actions, ["Reset_Arm", "ResetArm", "Reset Arm"]);
     eraActions.gripperClose = findActionFlexible(actions, ["Gripper_Close", "Manual_Pick", "Pick"]);
     eraActions.gripperOpen = findActionFlexible(actions, ["Gripper_Open", "Manual_Drop", "Drop"]);
     eraRealtimeConfigs.missionStep = findRealtimeConfigFlexible(realtimeConfigs, [
@@ -353,7 +354,7 @@ function validateEraBindings() {
     // ===== GRIPPER =====
     if (!eraActions.gripperClose) missing.push("Gripper_Close");
     if (!eraActions.gripperOpen) missing.push("Gripper_Open");
-
+    if (!eraActions.resetArm) missing.push("Reset_Arm");
     appState.missingActions = missing;
 
     applyConfigStateToUI();
@@ -469,7 +470,7 @@ function refreshControlStates() {
     setControlState(btnResetArm, {
         disabled: runtimeLocked || !!cfg.btnResetArm,
         configError: !!cfg.btnResetArm,
-        title: cfg.btnResetArm ? "Thiếu action Servo" : "",
+        title: cfg.btnResetArm ? "Thiếu action Reset_Arm" : "",
     });
 
     // Servo inputs
@@ -489,7 +490,9 @@ function applyConfigStateToUI() {
         "Move_Left",
         "Move_Right",
     ]);
-
+    const missingResetArm = hasMissingAction([
+        "Reset_Arm",
+    ]);
     const missingRun = hasMissingAction([
         "Run_Enable",
         "Run_Disable",
@@ -527,7 +530,7 @@ function applyConfigStateToUI() {
         moveButtons: missingMove,
         btnPick: missingGripper || missingServo,
         btnDrop: missingGripper || missingServo,
-        btnResetArm: missingServo,
+        btnResetArm: missingResetArm,
         armInputs: missingServo,
     };
 
@@ -1198,32 +1201,29 @@ async function resetArm() {
         return;
     }
 
-    appState.isHandlingPickDrop = true;
-    printLog("Hệ thống: Đang đưa tay máy về góc mặc định an toàn...", "info");
-
-    try {
-        for (const joint of JOINTS_WITH_NAMES) {
-            const defaultVal = joint.home;
-            const numInput = el(`num${joint.id}`);
-            const rangeInput = el(`range${joint.id}`);
-
-            if (numInput) numInput.value = defaultVal;
-            if (rangeInput) rangeInput.value = defaultVal;
-
-            const ok = sendArmCommand(joint.id, defaultVal);
-            if (ok === false) {
-                printLog(`Reset thất bại tại J${joint.id} (${joint.label}).`, "error");
-                return;
-            }
-
-            await sleep(250);
-        }
-
-        appState.gripperState = GRIPPER_OPEN_ANGLE <= 85 ? "CLOSED" : "OPEN";
-        printLog("Hoàn tất: Tay máy đã về góc mặc định.", "success");
-    } finally {
-        appState.isHandlingPickDrop = false;
+    if (!eraActions.resetArm) {
+        printLog("Thiếu action Reset_Arm trên E-Ra.", "error");
+        return;
     }
+
+    const ok = triggerEraAction(eraActions.resetArm);
+    if (!ok) {
+        printLog("Gửi lệnh Reset_Arm thất bại.", "error");
+        return;
+    }
+
+    printLog("Đã gửi lệnh Reset_Arm tới ESP32.", "info");
+
+    // cập nhật UI tạm thời về home
+    JOINTS_WITH_NAMES.forEach((joint) => {
+        const numInput = el(`num${joint.id}`);
+        const rangeInput = el(`range${joint.id}`);
+
+        if (numInput) numInput.value = joint.home;
+        if (rangeInput) rangeInput.value = joint.home;
+    });
+
+    appState.gripperState = "OPEN";
 }
 /* =========================
    13. WMS SHARED (MANUAL + AUTO)
