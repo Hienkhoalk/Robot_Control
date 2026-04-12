@@ -1136,12 +1136,12 @@ function getJointConfigById(id) {
     return JOINTS_WITH_NAMES.find((joint) => joint.id === id) || null;
 }
 function sendArmCommand(id, value) {
-    if (!ensureManualServoControl("điều khiển tay máy")) return;
+    if (!ensureManualServoControl("điều khiển tay máy")) return false;
 
     const joint = getJointConfigById(id);
     if (!joint) {
         printLog(`Không tìm thấy cấu hình khớp J${id}`, "error");
-        return;
+        return false;
     }
 
     const safeValue = clamp(value, joint.min, joint.max);
@@ -1150,16 +1150,20 @@ function sendArmCommand(id, value) {
 
     if (!action) {
         printLog(`Thiếu action servo cho ${jointName}`, "error");
-        return;
+        return false;
     }
 
     const ok = triggerEraAction(action, safeValue);
-    if (ok) {
-        if (id === 6) {
-            appState.gripperState = safeValue <= 85 ? "CLOSED" : "OPEN";
-        }
-        printLog(`Khớp ${jointName} (J${id}) -> ${safeValue}°`, "info");
+    if (!ok) {
+        return false;
     }
+
+    if (id === 6) {
+        appState.gripperState = safeValue <= 85 ? "CLOSED" : "OPEN";
+    }
+
+    printLog(`Khớp ${jointName} (J${id}) -> ${safeValue}°`, "info");
+    return true;
 }
 
 function syncFromNum(id) {
@@ -1189,26 +1193,37 @@ function syncFromRange(id) {
 async function resetArm() {
     if (!ensureManualServoControl("reset tay máy")) return;
 
-    printLog("Hệ thống: Đang đưa tay máy về góc mặc định an toàn...", "info");
-
-    for (const joint of JOINTS_WITH_NAMES) {
-        const defaultVal = joint.home;
-        const numInput = el(`num${joint.id}`);
-        const rangeInput = el(`range${joint.id}`);
-
-        if (numInput) numInput.value = defaultVal;
-        if (rangeInput) rangeInput.value = defaultVal;
-
-        const action = getServoActionById(joint.id);
-        if (action) {
-            triggerEraAction(action, defaultVal);
-        }
-
-        await sleep(180);
+    if (appState.isHandlingPickDrop) {
+        printLog("Tay gắp đang xử lý thao tác khác, vui lòng chờ.", "warn");
+        return;
     }
 
-    appState.gripperState = "OPEN";
-    printLog("Hoàn tất: Tay máy đã về góc mặc định.", "success");
+    appState.isHandlingPickDrop = true;
+    printLog("Hệ thống: Đang đưa tay máy về góc mặc định an toàn...", "info");
+
+    try {
+        for (const joint of JOINTS_WITH_NAMES) {
+            const defaultVal = joint.home;
+            const numInput = el(`num${joint.id}`);
+            const rangeInput = el(`range${joint.id}`);
+
+            if (numInput) numInput.value = defaultVal;
+            if (rangeInput) rangeInput.value = defaultVal;
+
+            const ok = sendArmCommand(joint.id, defaultVal);
+            if (ok === false) {
+                printLog(`Reset thất bại tại J${joint.id} (${joint.label}).`, "error");
+                return;
+            }
+
+            await sleep(250);
+        }
+
+        appState.gripperState = GRIPPER_OPEN_ANGLE <= 85 ? "CLOSED" : "OPEN";
+        printLog("Hoàn tất: Tay máy đã về góc mặc định.", "success");
+    } finally {
+        appState.isHandlingPickDrop = false;
+    }
 }
 /* =========================
    13. WMS SHARED (MANUAL + AUTO)
