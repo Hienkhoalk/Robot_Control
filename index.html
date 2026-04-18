@@ -130,6 +130,39 @@
                 </div>
             </section>
 
+            <!-- ═══════════════════════════════════════════════
+                 CAMERA PANEL — nhúng trực tiếp vào ô trống
+                 bên phải của Drive Control + Telemetry
+            ════════════════════════════════════════════════ -->
+            <section class="panel camera-panel">
+                <div class="panel-header">
+                    <h2>Camera</h2>
+                    <div class="cam-header-right">
+                        <div class="cam-live-dot" id="camDot"></div>
+                        <span class="cam-status-text" id="camStatusText">Đang kết nối...</span>
+                        <button class="btn-export" onclick="camReconnect()"
+                            style="padding:4px 10px; font-size:0.72rem;">↺ Reconnect</button>
+                    </div>
+                </div>
+
+                <!-- Khung video -->
+                <div class="cam-viewport">
+                    <img id="camFeed" class="cam-feed" src="" alt="AGV Camera" />
+                    <!-- Overlay trạng thái khi mất kết nối -->
+                    <div class="cam-offline-overlay" id="camOffline">
+                        <div class="cam-offline-icon">📷</div>
+                        <div class="cam-offline-text">Chờ kết nối Pi...</div>
+                        <div class="cam-offline-sub" id="camRetryCount"></div>
+                    </div>
+                </div>
+
+                <!-- Footer thông tin
+                <div class="cam-footer-bar">
+                    <span class="cam-info">640 × 480 · MJPEG · Flask :5000</span>
+                    <span class="cam-ip" id="camIpDisplay">—</span>
+                </div> -->
+            </section>
+            <!-- ═══════════════════════════════════════════════ -->
             <section class="panel arm-panel">
                 <div class="panel-header arm-panel-header">
                     <h2>Cánh tay robot 6 bậc</h2>
