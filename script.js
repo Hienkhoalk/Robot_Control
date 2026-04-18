@@ -1795,7 +1795,7 @@ const CAM_CONFIG = {
     https:      true,   
 };
 // startStream() — đổi http thành https động
-const proto = CAM_CONFIG.https ? "https" : "http";
+
 const url = `${proto}://${ip}:${port}/video_feed?t=${Date.now()}`;
 
 // camReconnect() — đổi tương tự
