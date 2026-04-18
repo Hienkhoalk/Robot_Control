@@ -1794,13 +1794,7 @@ const CAM_CONFIG = {
     maxRetries: 0, // 0 = thu lai mai mai
     https:      true,   
 };
-// startStream() — đổi http thành https động
 
-const url = `${proto}://${ip}:${port}/video_feed?t=${Date.now()}`;
-
-// camReconnect() — đổi tương tự
-const proto = CAM_CONFIG.https ? "https" : "http";
-const url = `${proto}://${CAM_CONFIG.piIp}:${CAM_CONFIG.port}/video_feed?t=${Date.now()}`;
 const camState = {
     retryCount: 0,
     retryTimer: null,
