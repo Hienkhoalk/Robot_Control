@@ -1792,7 +1792,6 @@ const CAM_CONFIG = {
     port: 5000,
     retryDelay: 4000,
     maxRetries: 0, // 0 = thu lai mai mai
-    https:      true,   
 };
 
 const camState = {
@@ -1837,7 +1836,11 @@ function camInit() {
     function startStream() {
         clearTimeout(camState.retryTimer);
 
-        const url = `http://${ip}:${port}/video_feed?t=${Date.now()}`;
+        // --- SỬA Ở ĐÂY ---
+        const protocol = CAM_CONFIG.https ? "https" : "http";
+        const url = `${protocol}://${ip}:${port}/video_feed?t=${Date.now()}`;
+        // -----------------
+
         feed.src = url;
 
         if (retry) {
@@ -1846,7 +1849,6 @@ function camInit() {
                 : "";
         }
     }
-
     feed.onload = () => {
         setLive(true);
         camState.retryCount = 0;
@@ -1869,7 +1871,8 @@ function camInit() {
     };
 
     startStream();
-    printLog(`[CAM] Kết nối stream http://${ip}:${port}/video_feed`, "info");
+    // Thay vì: printLog(`[CAM] Kết nối stream http://${ip}:${port}/video_feed`, "info");
+    printLog(`[CAM] Kết nối stream ${CAM_CONFIG.https ? "https" : "http"}://${ip}:${port}/video_feed`, "info");
 }
 
 function camReconnect() {
@@ -1892,7 +1895,10 @@ function camReconnect() {
     if (retry) retry.textContent = "";
 
     setTimeout(() => {
-        const url = `http://${CAM_CONFIG.piIp}:${CAM_CONFIG.port}/video_feed?t=${Date.now()}`;
+        // --- SỬA Ở ĐÂY ---
+        const protocol = CAM_CONFIG.https ? "https" : "http";
+        const url = `${protocol}://${CAM_CONFIG.piIp}:${CAM_CONFIG.port}/video_feed?t=${Date.now()}`;
+        // -----------------
         if (feed) {
             feed.src = "";
             setTimeout(() => {
