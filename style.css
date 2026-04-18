@@ -318,9 +318,6 @@ body {
 }
 
 /* --- DRIVE D-PAD --- */
-/* Container bao quanh cả 2 cụm nút */
-
-/* --- 1. GIỮ NGUYÊN KHUNG CHÍNH (THEO YÊU CẦU) --- */
 .d-pad-container {
   display: flex !important;
   flex-direction: row;
@@ -331,17 +328,13 @@ body {
   min-height: 250px;
   flex: 1.2 !important;
 }
-
-/* --- 2. CỤM PHÍM DI CHUYỂN (NÂNG CẤP LÊN STYLE PRO) --- */
 .d-pad {
   display: grid !important;
   grid-template-columns: repeat(3, 65px);
   grid-template-rows: repeat(3, 65px);
-  gap: 12px; /* Tăng gap một chút cho thoáng */
+  gap: 12px;
   flex-shrink: 0;
 }
-
-/* Style chung cho phím di chuyển: Giả lập phím cơ */
 .btn-dir {
   background: linear-gradient(145deg, #1e293b, #111827);
   color: #94a3b8;
@@ -353,51 +346,42 @@ body {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  /* Đổ bóng tạo độ nổi */
   box-shadow:
     6px 6px 12px #050810,
     -2px -2px 8px rgba(255, 255, 255, 0.02);
 }
-
 .btn-dir:hover {
   color: #3b82f6;
   border-color: #3b82f6;
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
   transform: translateY(-2px);
 }
-
 .btn-dir:active {
   transform: scale(0.92);
   background: #0f172a;
   box-shadow: inset 4px 4px 8px #000;
 }
 
-/* --- 3. NÚT STOP Ở GIỮA (STYLE LED TRÒN ĐỒNG BỘ VỚI GẮP/THẢ) --- */
 .btn-stop {
   width: 100%;
   height: 100%;
-  border-radius: 50%; /* Làm nút STOP tròn để đồng bộ với GẮP/THẢ */
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-
-  /* Cấu trúc đa lớp giống nút GẮP/THẢ */
   background: #1e293b;
   border: 3px solid #334155;
   position: relative;
   font-weight: 900;
   font-size: 11px;
   letter-spacing: 1px;
-  color: #ef4444; /* Màu đỏ mặc định */
-
+  color: #ef4444;
   box-shadow:
     5px 5px 10px #050810,
     inset 2px 2px 5px rgba(0, 0, 0, 0.5);
 }
-
-/* Tạo mặt nút cho STOP */
 .btn-stop::after {
   content: "";
   position: absolute;
@@ -408,37 +392,31 @@ body {
   z-index: 0;
   transition: 0.3s;
 }
-
-/* Đẩy chữ STOP lên trên cùng */
 .btn-stop span {
   position: relative;
   z-index: 2;
   text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
 }
-
 .btn-stop:hover {
   border-color: #ef4444;
   box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
 }
-
 .btn-stop:hover::after {
   background: #1a0a0a;
   box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.5);
 }
-
 .btn-stop:active {
   transform: scale(0.92);
 }
 
-/* --- 4. GIỮ NGUYÊN PHẦN GẮP THẢ (THEO YÊU CẦU) --- */
 .side-actions {
   display: flex !important;
   flex-direction: column;
-  gap: 20px; /* Tăng nhẹ gap cho thoáng */
+  gap: 20px;
   flex-shrink: 0;
   margin-left: 20px;
 }
-/* Trạng thái START (Màu Xanh) */
+
 .btn-stop.is-start {
   border-color: #10b981 !important;
   box-shadow:
@@ -454,7 +432,6 @@ body {
   text-shadow: 0 0 8px rgba(16, 185, 129, 0.8) !important;
 }
 
-/* Trạng thái STOP (Màu Đỏ) */
 .btn-stop.is-stop {
   border-color: #ef4444 !important;
   box-shadow:
@@ -469,6 +446,7 @@ body {
   color: #ef4444 !important;
   text-shadow: 0 0 8px rgba(239, 68, 68, 0.8) !important;
 }
+
 .btn-action {
   width: 85px;
   height: 85px;
@@ -487,7 +465,6 @@ body {
     -4px -4px 12px rgba(255, 255, 255, 0.03),
     inset 2px 2px 5px rgba(0, 0, 0, 0.5);
 }
-
 .btn-action::after {
   content: "";
   position: absolute;
@@ -501,7 +478,6 @@ body {
   z-index: 1;
   transition: 0.3s;
 }
-
 .btn-action span {
   position: relative;
   z-index: 2;
@@ -510,8 +486,6 @@ body {
   font-weight: 900;
   transition: 0.3s;
 }
-
-/* LED Hover Effects */
 .btn-action.pick:hover::after {
   background: #0f172a;
   box-shadow: inset 0 0 15px rgba(45, 212, 191, 0.6);
@@ -524,7 +498,6 @@ body {
   border-color: #2dd4bf;
   box-shadow: 0 0 25px rgba(45, 212, 191, 0.2);
 }
-
 .btn-action.drop:hover::after {
   background: #0f172a;
   box-shadow: inset 0 0 15px rgba(251, 191, 36, 0.6);
@@ -537,7 +510,6 @@ body {
   border-color: #fbbf24;
   box-shadow: 0 0 25px rgba(251, 191, 36, 0.2);
 }
-
 .btn-action:active {
   transform: scale(0.94);
 }
@@ -571,9 +543,8 @@ body {
   font-weight: 700;
 }
 
-/* Cố định chiều cao và bật thanh cuộn cho Terminal */
 .terminal {
-  height: 220px; /* Cố định chiều cao tại đây */
+  height: 220px;
   background: #000;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -581,7 +552,7 @@ body {
   font-family: "JetBrains Mono", monospace;
   font-size: 0.75rem;
   color: var(--color-green);
-  overflow-y: auto; /* Bật scrollbar dọc */
+  overflow-y: auto;
   line-height: 1.6;
   scroll-behavior: smooth;
 }
@@ -589,8 +560,6 @@ body {
   color: #6b7280;
   margin-right: 6px;
 }
-
-/* Tùy chỉnh làm đẹp thanh cuộn cho Terminal */
 .terminal::-webkit-scrollbar {
   width: 8px;
 }
@@ -605,13 +574,149 @@ body {
 .terminal::-webkit-scrollbar-thumb:hover {
   background: #4b5563;
 }
-/* --- ROBOT ARM CONTROLS (ĐÃ VIẾT LẠI) --- */
+
+/* ═══════════════════════════════════════════════════
+   CAMERA PANEL
+   Chiếm đúng 1 cột trong grid — cùng hàng với
+   Drive Control và Telemetry
+═══════════════════════════════════════════════════ */
+.camera-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
+
+/* Header bên phải: dot + text + nút */
+.cam-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Chấm LED live */
+.cam-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4b5563;
+  flex-shrink: 0;
+  transition:
+    background 0.3s,
+    box-shadow 0.3s;
+}
+.cam-live-dot.live {
+  background: var(--color-green);
+  box-shadow: 0 0 8px var(--color-green);
+  animation: cam-pulse 2s ease-in-out infinite;
+}
+.cam-live-dot.error {
+  background: var(--color-red);
+  box-shadow: 0 0 8px var(--color-red);
+}
+
+@keyframes cam-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.cam-status-text {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  font-family: "JetBrains Mono", monospace;
+  white-space: nowrap;
+}
+.cam-status-text.live {
+  color: var(--color-green);
+}
+.cam-status-text.error {
+  color: var(--color-red);
+}
+
+/* Viewport video — tỉ lệ 4:3 cứng */
+.cam-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  flex: 1;
+}
+
+/* Ảnh MJPEG */
+.cam-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.3s;
+}
+.cam-feed.loading {
+  opacity: 0.3;
+}
+
+/* Overlay khi offline */
+.cam-offline-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  transition: opacity 0.3s;
+}
+.cam-offline-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cam-offline-icon {
+  font-size: 2.5rem;
+  opacity: 0.4;
+}
+.cam-offline-text {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-family: "JetBrains Mono", monospace;
+}
+.cam-offline-sub {
+  font-size: 0.7rem;
+  color: #4b5563;
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* Footer bar dưới viewport */
+.cam-footer-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.cam-info {
+  font-size: 0.68rem;
+  color: #4b5563;
+  font-family: "JetBrains Mono", monospace;
+}
+.cam-ip {
+  font-size: 0.68rem;
+  color: var(--color-blue);
+  font-family: "JetBrains Mono", monospace;
+}
+
 /* --- ROBOT ARM CONTROLS --- */
-/* Ép panel này chiếm toàn bộ chiều ngang của màn hình (giống như bảng WMS) */
 .arm-panel {
   grid-column: 1 / -1;
 }
-
 .arm-panel-header {
   display: flex;
   justify-content: space-between;
@@ -619,23 +724,12 @@ body {
   flex-wrap: wrap;
   gap: 8px;
 }
-
-.joint-names {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  white-space: nowrap;
-}
-
 .arm-controls-grid {
   display: grid;
-  /* Ép cứng hiển thị thành 2 cột bằng nhau */
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
 }
-
-/* Kéo xuống dưới cùng của file CSS để thêm tính năng Responsive cho Điện thoại */
 @media (max-width: 768px) {
-  /* Nếu xem trên màn hình nhỏ (điện thoại), nó sẽ tự động gập lại thành 1 cột cho dễ bấm */
   .arm-controls-grid {
     grid-template-columns: 1fr;
   }
@@ -661,7 +755,7 @@ body {
   font-family: "JetBrains Mono", monospace;
   font-weight: bold;
 }
-/* Tùy chỉnh Slider */
+
 .joint-widget input[type="range"] {
   -webkit-appearance: none;
   width: 100%;
@@ -688,7 +782,6 @@ body {
   transform: scale(1.15);
 }
 
-/* CSS cho nút điều chỉnh tinh */
 .btn-fine-adjust-container {
   display: flex;
   gap: 8px;
@@ -735,6 +828,7 @@ body {
   background: var(--color-blue);
   color: white;
 }
+
 .table-wrap {
   width: 100%;
   max-height: 250px;
@@ -752,6 +846,7 @@ body {
   background: #4b5563;
   border-radius: 4px;
 }
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -778,6 +873,7 @@ th {
 tbody tr:hover {
   background: rgba(255, 255, 255, 0.02);
 }
+
 .tag {
   padding: 4px 10px;
   border-radius: 99px;
@@ -796,6 +892,12 @@ tbody tr:hover {
   background: rgba(239, 68, 68, 0.15);
   color: var(--color-red);
 }
+.tag-err {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
 .joint-input {
   width: 60px;
   background: #0b0f19;
@@ -808,22 +910,19 @@ tbody tr:hover {
   font-weight: 700;
   outline: none;
 }
-/* Ẩn mũi tên lên xuống mặc định của ô số */
 .joint-input::-webkit-inner-spin-button,
 .joint-input::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-/* Container quản lý vị trí */
+
 .input-container {
   position: relative;
   display: inline-block;
 }
-
-/* Ghi chú Tooltip mặc định ẩn */
 .input-tooltip {
   position: absolute;
-  bottom: 120%; /* Hiện lên phía trên ô nhập */
+  bottom: 120%;
   left: 50%;
   transform: translateX(-50%);
   background: var(--color-blue);
@@ -833,14 +932,12 @@ tbody tr:hover {
   font-size: 10px;
   white-space: nowrap;
   pointer-events: none;
-  opacity: 0; /* Ẩn đi */
+  opacity: 0;
   transition:
     opacity 0.2s,
     transform 0.2s;
   z-index: 10;
 }
-
-/* Tạo mũi tên nhỏ phía dưới Tooltip */
 .input-tooltip::after {
   content: "";
   position: absolute;
@@ -851,12 +948,11 @@ tbody tr:hover {
   border-style: solid;
   border-color: var(--color-blue) transparent transparent transparent;
 }
-
-/* KHI CLICK VÀO Ô NHẬP (FOCUS) -> HIỆN TOOLTIP */
 .joint-input:focus + .input-tooltip {
   opacity: 1;
   transform: translateX(-50%) translateY(-5px);
 }
+
 .btn-reset-arm {
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid var(--color-blue);
@@ -869,25 +965,22 @@ tbody tr:hover {
   transition: 0.2s;
   margin-left: 10px;
 }
-
 .btn-reset-arm:hover {
   background: var(--color-blue);
   color: white;
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
 }
-
 .btn-reset-arm:active {
   transform: scale(0.95);
 }
-
 .btn-action:active {
   transform: scale(0.95);
 }
-/* Badge trạng thái MÀU VÀNG (Dùng cho nhãn Mission Status) */
+
 .badge.moving-status {
-  background: rgba(251, 191, 36, 0.1) !important; /* Nền vàng cực mờ */
-  color: #fbbf24 !important; /* Chữ vàng Amber rực rỡ */
-  border: 1px solid rgba(251, 191, 36, 0.6) !important; /* Viền vàng */
+  background: rgba(251, 191, 36, 0.1) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.6) !important;
   padding: 5px 12px;
   border-radius: 20px;
   font-weight: 800;
@@ -896,7 +989,6 @@ tbody tr:hover {
   letter-spacing: 0.5px;
   box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
 }
-/* Badge trạng thái KHI HOÀN THÀNH (Màu xanh lá) */
 .badge.done-status {
   background: rgba(16, 185, 129, 0.15) !important;
   color: #10b981 !important;
@@ -904,24 +996,17 @@ tbody tr:hover {
   font-weight: bold;
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
+
 #wmsTable td:nth-child(2) {
-  color: #94a3b8; /* Màu xám xanh nhẹ */
+  color: #94a3b8;
   font-size: 0.9em;
 }
-.tag-err {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.35);
-}
-/* =========================
-   MISSION HISTORY PANEL
-========================= */
-/* ===== Mission History giống WMS ===== */
+
+/* --- MISSION HISTORY --- */
 .mission-history-panel {
   grid-column: 1 / -1;
   width: 100%;
 }
-
 .mission-history-panel .table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -929,52 +1014,43 @@ tbody tr:hover {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.02);
 }
-
 .mission-history-panel table {
   width: 100%;
   min-width: 100%;
   border-collapse: collapse;
-  table-layout: fixed; /* quan trọng */
+  table-layout: fixed;
 }
-
 .mission-history-panel thead tr {
   background: rgba(255, 255, 255, 0.02);
 }
-
 .mission-history-panel th,
 .mission-history-panel td {
   padding: 14px 16px;
   text-align: center;
   white-space: nowrap;
 }
-
 .mission-history-panel th:first-child,
 .mission-history-panel td:first-child {
-  width: 140px; /* cho giống cột Mã Kiện */
+  width: 140px;
 }
-
 .mission-history-panel th:nth-child(2),
 .mission-history-panel td:nth-child(2) {
   width: 110px;
 }
-
 .mission-history-panel th:nth-child(3),
 .mission-history-panel td:nth-child(3),
 .mission-history-panel th:nth-child(4),
 .mission-history-panel td:nth-child(4) {
   width: 120px;
 }
-
 .mission-history-panel th:nth-child(5),
 .mission-history-panel td:nth-child(5) {
   width: 180px;
 }
-
 .mission-history-panel th:nth-child(6),
 .mission-history-panel td:nth-child(6) {
   width: 140px;
 }
-
 .mission-history-panel th:nth-child(7),
 .mission-history-panel td:nth-child(7) {
   width: 130px;
