@@ -543,6 +543,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initDashboard();
     bindUIEvents();
     initEraWidget();
+    camInit();
 });
 
 /* =========================
@@ -1782,6 +1783,127 @@ function exportMissionHistoryCSV() {
     URL.revokeObjectURL(url);
     printLog("Đã export Mission History ra CSV.", "success");
 }
+/* =========================
+   20. CAMERA STREAM (MJPEG từ Raspberry Pi Flask)
+========================= */
+
+const CAM_CONFIG = {
+    piIp: "192.168.137.100", // doi IP Raspberry Pi that
+    port: 5000,
+    retryDelay: 4000,
+    maxRetries: 0, // 0 = thu lai mai mai
+};
+
+const camState = {
+    retryCount: 0,
+    retryTimer: null,
+    isLive: false,
+};
+
+function camInit() {
+    const ip = CAM_CONFIG.piIp;
+    const port = CAM_CONFIG.port;
+
+    const feed = el("camFeed");
+    const dot = el("camDot");
+    const statusT = el("camStatusText");
+    const offline = el("camOffline");
+    const retry = el("camRetryCount");
+    const ipDisplay = el("camIpDisplay");
+
+    if (ipDisplay) ipDisplay.textContent = `${ip}:${port}`;
+    if (!feed) return;
+
+    function setLive(ok) {
+        camState.isLive = ok;
+
+        if (dot) {
+            dot.className = "cam-live-dot" + (ok ? " live" : " error");
+        }
+
+        if (statusT) {
+            statusT.textContent = ok ? "LIVE" : "Mất kết nối";
+            statusT.className = "cam-status-text" + (ok ? " live" : " error");
+        }
+
+        if (offline) {
+            offline.className = "cam-offline-overlay" + (ok ? " hidden" : "");
+        }
+
+        feed.classList.toggle("loading", !ok);
+    }
+
+    function startStream() {
+        clearTimeout(camState.retryTimer);
+
+        const url = `http://${ip}:${port}/video_feed?t=${Date.now()}`;
+        feed.src = url;
+
+        if (retry) {
+            retry.textContent = camState.retryCount > 0
+                ? `Thử lại lần ${camState.retryCount}...`
+                : "";
+        }
+    }
+
+    feed.onload = () => {
+        setLive(true);
+        camState.retryCount = 0;
+        if (retry) retry.textContent = "";
+    };
+
+    feed.onerror = () => {
+        setLive(false);
+        camState.retryCount++;
+
+        if (retry) {
+            retry.textContent = `Thử lại lần ${camState.retryCount}...`;
+        }
+
+        if (CAM_CONFIG.maxRetries === 0 || camState.retryCount <= CAM_CONFIG.maxRetries) {
+            camState.retryTimer = setTimeout(startStream, CAM_CONFIG.retryDelay);
+        }
+
+        printLog(`[CAM] Mất kết nối camera. Thử lại sau ${CAM_CONFIG.retryDelay / 1000}s...`, "warn");
+    };
+
+    startStream();
+    printLog(`[CAM] Kết nối stream http://${ip}:${port}/video_feed`, "info");
+}
+
+function camReconnect() {
+    camState.retryCount = 0;
+    clearTimeout(camState.retryTimer);
+
+    const feed = el("camFeed");
+    const dot = el("camDot");
+    const statusT = el("camStatusText");
+    const offline = el("camOffline");
+    const retry = el("camRetryCount");
+
+    if (feed) feed.src = "";
+    if (dot) dot.className = "cam-live-dot";
+    if (statusT) {
+        statusT.textContent = "Đang kết nối...";
+        statusT.className = "cam-status-text";
+    }
+    if (offline) offline.className = "cam-offline-overlay";
+    if (retry) retry.textContent = "";
+
+    setTimeout(() => {
+        const url = `http://${CAM_CONFIG.piIp}:${CAM_CONFIG.port}/video_feed?t=${Date.now()}`;
+        if (feed) {
+            feed.src = "";
+            setTimeout(() => {
+                feed.src = url;
+            }, 100);
+        }
+    }, 300);
+
+    printLog("[CAM] Đang kết nối lại camera...", "info");
+}
+
+window.camReconnect = camReconnect;
 /* =========================
    19. OPTIONAL GLOBALS
 ========================= */
