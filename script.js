@@ -1786,12 +1786,10 @@ function exportMissionHistoryCSV() {
 /* =========================
    20. CAMERA STREAM (MJPEG từ Raspberry Pi Flask)
 ========================= */
-
 const CAM_CONFIG = {
-    piIp: "192.168.137.100", // doi IP Raspberry Pi that
-    port: 5000,
+    streamBaseUrl: "https://cam.myagv.site",
     retryDelay: 4000,
-    maxRetries: 0, // 0 = thu lai mai mai
+    maxRetries: 0,
 };
 
 const camState = {
@@ -1800,21 +1798,20 @@ const camState = {
     isLive: false,
 };
 
-function camInit() {
-    const ip = CAM_CONFIG.piIp;
-    const port = CAM_CONFIG.port;
+function buildCamUrl() {
+    return `${CAM_CONFIG.streamBaseUrl}/video_feed?t=${Date.now()}`;
+}
 
+function camInit() {
     const feed = el("camFeed");
     const dot = el("camDot");
     const statusT = el("camStatusText");
     const offline = el("camOffline");
     const retry = el("camRetryCount");
-    const ipDisplay = el("camIpDisplay");
 
-    if (ipDisplay) ipDisplay.textContent = `${ip}:${port}`;
     if (!feed) return;
 
-    function setLive(ok) {
+    function setLive(ok, text = "") {
         camState.isLive = ok;
 
         if (dot) {
@@ -1822,7 +1819,7 @@ function camInit() {
         }
 
         if (statusT) {
-            statusT.textContent = ok ? "LIVE" : "Mất kết nối";
+            statusT.textContent = ok ? "LIVE" : (text || "Mất kết nối");
             statusT.className = "cam-status-text" + (ok ? " live" : " error");
         }
 
@@ -1835,13 +1832,7 @@ function camInit() {
 
     function startStream() {
         clearTimeout(camState.retryTimer);
-
-        // --- SỬA Ở ĐÂY ---
-        const protocol = CAM_CONFIG.https ? "https" : "http";
-        const url = `${protocol}://${ip}:${port}/video_feed?t=${Date.now()}`;
-        // -----------------
-
-        feed.src = url;
+        feed.src = buildCamUrl();
 
         if (retry) {
             retry.textContent = camState.retryCount > 0
@@ -1849,30 +1840,30 @@ function camInit() {
                 : "";
         }
     }
+
     feed.onload = () => {
         setLive(true);
         camState.retryCount = 0;
         if (retry) retry.textContent = "";
+        printLog("[CAM] Camera LIVE qua Cloudflare Tunnel.", "success");
     };
 
     feed.onerror = () => {
-        setLive(false);
+        setLive(false, "Mất kết nối camera");
         camState.retryCount++;
 
         if (retry) {
             retry.textContent = `Thử lại lần ${camState.retryCount}...`;
         }
 
+        printLog("[CAM] Không tải được stream public.", "error");
+
         if (CAM_CONFIG.maxRetries === 0 || camState.retryCount <= CAM_CONFIG.maxRetries) {
             camState.retryTimer = setTimeout(startStream, CAM_CONFIG.retryDelay);
         }
-
-        printLog(`[CAM] Mất kết nối camera. Thử lại sau ${CAM_CONFIG.retryDelay / 1000}s...`, "warn");
     };
 
     startStream();
-    // Thay vì: printLog(`[CAM] Kết nối stream http://${ip}:${port}/video_feed`, "info");
-    printLog(`[CAM] Kết nối stream ${CAM_CONFIG.https ? "https" : "http"}://${ip}:${port}/video_feed`, "info");
 }
 
 function camReconnect() {
@@ -1895,22 +1886,14 @@ function camReconnect() {
     if (retry) retry.textContent = "";
 
     setTimeout(() => {
-        // --- SỬA Ở ĐÂY ---
-        const protocol = CAM_CONFIG.https ? "https" : "http";
-        const url = `${protocol}://${CAM_CONFIG.piIp}:${CAM_CONFIG.port}/video_feed?t=${Date.now()}`;
-        // -----------------
         if (feed) {
-            feed.src = "";
-            setTimeout(() => {
-                feed.src = url;
-            }, 100);
+            feed.src = buildCamUrl();
         }
     }, 300);
 
-    printLog("[CAM] Đang kết nối lại camera...", "info");
+    printLog("[CAM] Đang kết nối lại camera public...", "info");
 }
 
-window.camReconnect = camReconnect;
 /* =========================
    19. OPTIONAL GLOBALS
 ========================= */
@@ -1928,3 +1911,4 @@ window.triggerEmergency = triggerEmergency;
 window.resetFromEmergency = resetFromEmergency;
 window.showAlert = showAlert;
 window.exportMissionHistoryCSV = exportMissionHistoryCSV;
+window.camReconnect = camReconnect;
